@@ -1,7 +1,12 @@
+using Antiforgery;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
+
+builder.Services.AddSingleton<IDataProtectionProvider, NoOpDataProtector>();
+
 builder.Services.AddAntiforgery(options => options.HeaderName = "XSRF-TOKEN");
 
 var app = builder.Build();
