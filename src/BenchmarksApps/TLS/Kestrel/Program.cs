@@ -1,15 +1,13 @@
-using System.Diagnostics;
 using System.Net;
 using System.Net.Security;
-using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
+using TlsHelpers;
 
 Console.WriteLine("Starting application...");
 
@@ -31,6 +29,8 @@ if (mTlsEnabled && tlsRenegotiationEnabled)
 {
     Console.WriteLine("mTLS and tlsRenegotiation require different clientCertMode setup. Using TLS Renegotiation by default.");
 }
+
+SchannelWrapper.DisableTlsResumption();
 
 var connectionIds = new HashSet<string>();
 var fetchedCertsCounter = 0;
@@ -160,7 +160,7 @@ app.MapGet("/hello-world", () =>
 await app.StartAsync();
 
 Console.WriteLine("Application Info:");
-LogOpenSSLVersion();
+OpenSslWrapper.LogOpenSSLVersion();
 if (mTlsEnabled)
 {
     Console.WriteLine($"\tmTLS is enabled (client cert is required)");
@@ -183,6 +183,9 @@ Console.WriteLine("--------------------------------");
 
 Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
+
+// rollback after finished
+SchannelWrapper.RollbackTlsResumptionToDefault();
 
 static IPEndPoint CreateIPEndPoint(UrlPrefix urlPrefix)
 {
@@ -224,30 +227,4 @@ static SslProtocols? ParseSslProtocols(string? supportedTlsVersions)
     }
 
     return protocols;
-}
-
-static void LogOpenSSLVersion()
-{
-    if (!(OperatingSystem.IsLinux() || OperatingSystem.IsMacOS()))
-    {
-        return;
-    }
-
-    using var process = new Process()
-    {
-        StartInfo =
-        {
-            FileName = "/usr/bin/env",
-            Arguments = "openssl version",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        },
-    };
-
-    process.Start();
-    process.WaitForExit();
-    var output = process.StandardOutput.ReadToEnd();
-    Console.WriteLine(output);
 }

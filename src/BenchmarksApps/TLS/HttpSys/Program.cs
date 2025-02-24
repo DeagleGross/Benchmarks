@@ -1,7 +1,7 @@
-using HttpSys;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
+using TlsHelpers;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -27,6 +27,8 @@ if (!NetShWrapper.BindingExists(httpsIpPort, out var originalCertThumbprint, out
     }
     NetShWrapper.SetCertBinding(httpsIpPort, originalCertThumbprint);
 }
+
+SchannelWrapper.DisableTlsResumption();
 
 #pragma warning disable CA1416 // Can be launched only on Windows (HttpSys)
 builder.WebHost.UseHttpSys(options =>
@@ -169,3 +171,5 @@ Console.WriteLine("--------------------------------");
 
 Console.WriteLine("Application started.");
 await app.WaitForShutdownAsync();
+
+SchannelWrapper.RollbackTlsResumptionToDefault();
