@@ -7,6 +7,9 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>.</DockerfileContext>
     <UserSecretsId>1b89f0d2-44eb-4070-94ec-e963a14ec8b0</UserSecretsId>
+
+    <DebugSymbols>true</DebugSymbols> <!-- Ensures symbols are included -->
+    <DebugType>full</DebugType> <!-- Creates full debug symbols -->
   </PropertyGroup>
 
   <ItemGroup>
