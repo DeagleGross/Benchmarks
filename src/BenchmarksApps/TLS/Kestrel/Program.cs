@@ -114,7 +114,7 @@ if (logRequestDetails)
             Console.WriteLine("-----");
             Console.WriteLine("TLS: " + tlsHandshakeFeature.Protocol);
             Console.WriteLine("-----");
-            Console.WriteLine("CipherSuite: " + tlsHandshakeFeature.NegotiatedCipherSuite);
+            Console.WriteLine("CipherSuite: " + tlsHandshakeFeature.NegotiatedCipherSuite + "; CipherStrength: " + tlsHandshakeFeature.CipherStrength + "; CipherAlgo: " + tlsHandshakeFeature.CipherAlgorithm);
             Console.WriteLine("-----");
         }
 

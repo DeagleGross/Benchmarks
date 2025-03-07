@@ -1,3 +1,4 @@
+using System.Net.Security;
 using HttpSys;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -57,12 +58,13 @@ if (logRequestDetails)
             logged = true;
 
             var tlsHandshakeFeature = context.Features.GetRequiredFeature<ITlsHandshakeFeature>();
+            var sslStream = context.Features.GetRequiredFeature<SslStream>();
 
             Console.WriteLine("Request details:");
             Console.WriteLine("-----");
             Console.WriteLine("TLS: " + tlsHandshakeFeature.Protocol);
             Console.WriteLine("-----");
-            Console.WriteLine("CipherSuite: " + tlsHandshakeFeature.NegotiatedCipherSuite);
+            Console.WriteLine("CipherSuite: " + tlsHandshakeFeature.NegotiatedCipherSuite + "; CipherStrength: " + tlsHandshakeFeature.CipherStrength + "; CipherAlgo: " + tlsHandshakeFeature.CipherAlgorithm);
             Console.WriteLine("-----");
         }
 
