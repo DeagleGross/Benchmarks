@@ -62,6 +62,8 @@ if (logRequestDetails)
             Console.WriteLine("-----");
             Console.WriteLine("TLS: " + tlsHandshakeFeature.Protocol);
             Console.WriteLine("-----");
+            Console.WriteLine("CipherSuite: " + tlsHandshakeFeature.NegotiatedCipherSuite);
+            Console.WriteLine("-----");
         }
 
         await next(context);
