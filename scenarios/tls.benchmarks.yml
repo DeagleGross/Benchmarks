@@ -2,7 +2,7 @@
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.Bombardier/bombardier.yml
   - https://raw.githubusercontent.com/dotnet/crank/main/src/Microsoft.Crank.Jobs.HttpClient/httpclient.yml
   - https://github.com/aspnet/Benchmarks/blob/main/scenarios/aspnet.profiles.yml?raw=true
-  - https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true
+  # - https://github.com/aspnet/Benchmarks/blob/main/build/azure.profile.yml?raw=true
 
 variables:
   serverPort: 5000
@@ -62,6 +62,32 @@ jobs:
       tlsRenegotiation: false
       certValidationConsoleEnabled: false
       statsEnabled: false  
+
+profiles:
+  idna-intel-win-relay:
+    variables:
+      serverPort: 5000
+      serverAddress: 10.0.4.14
+      cores: 4
+    jobs: 
+      db:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/azuredb
+        aliases:
+          - extra
+      application:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/idnaintelwin
+        variables:
+          databaseServer: 10.0.4.6
+        aliases:
+          - main
+      load:
+        endpoints: 
+          - https://aspnetperf.servicebus.windows.net/idnaintellin
+        aliases:
+          - warmup
+          - secondary
 
 scenarios:
 
