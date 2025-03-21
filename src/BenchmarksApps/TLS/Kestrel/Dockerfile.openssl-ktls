@@ -1,0 +1,54 @@
+# This stage is used when running from VS in fast mode (Default for Debug configuration)
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS base
+USER root
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+# Install dependencies for building OpenSSL
+RUN apk add --no-cache wget perl build-base linux-headers
+
+# Build OpenSSL from source with kTLS enabled
+WORKDIR /tmp
+RUN wget https://www.openssl.org/source/openssl-3.4.1.tar.gz && \
+    tar -xzf openssl-3.4.1.tar.gz && \
+    cd openssl-3.4.1 && \
+    ./Configure linux-x86_64 enable-ktls && \
+    make -j$(nproc) && \
+    make install && \
+    cd / && rm -rf /tmp/openssl-3.4.1
+
+# Set environment variable to ensure OpenSSL libraries are found
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+# This stage is used to build the service project
+FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["Kestrel.csproj", "."]
+RUN dotnet restore "./Kestrel.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet build "./Kestrel.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# This stage is used to publish the service project
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./Kestrel.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+# This stage is used in production
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+# Ensure OpenSSL runs in kTLS mode
+ENV OPENSSL_CONF=/etc/ssl/openssl.cnf
+RUN echo "openssl_conf = openssl_init" >> $OPENSSL_CONF && \
+    echo "[openssl_init]" >> $OPENSSL_CONF && \
+    echo "ssl_conf = ssl_sect" >> $OPENSSL_CONF && \
+    echo "[ssl_sect]" >> $OPENSSL_CONF && \
+    echo "system_default = system_default_sect" >> $OPENSSL_CONF && \
+    echo "[system_default_sect]" >> $OPENSSL_CONF && \
+    echo "Options = KTLS" >> $OPENSSL_CONF
+
+ENTRYPOINT [ "dotnet", "Kestrel.dll" ]

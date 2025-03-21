@@ -241,3 +241,19 @@ scenarios:
         connections: 32
         serverScheme: https
         sslProtocol: tls12
+
+  tls-handshakes-docker-openssl-ktls:
+    application:
+      job: dockerLinuxKestrelServer
+      # ktls is option to run openssl in kernel mode
+      # (https://github.com/openssl/openssl/blob/95051052b319d346a8aa3d34d6105d683bb77294/INSTALL.md?plain=1#L585)
+      dockerFile: dockerKestrel/src/BenchmarksApps/TLS/Kestrel/Dockerfile.azurelinux
+    load:
+      job: httpclient
+      variables:
+        path: /hello-world
+        serverPort: 8080
+        presetHeaders: connectionclose
+        connections: 32
+        serverScheme: https
+        sslProtocol: tls12
