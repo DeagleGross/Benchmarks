@@ -15,11 +15,11 @@ RUN apk add --no-cache \
 ENV OPENSSL_VERSION=3.3.3
 ENV OPENSSL_PREFIX=/opt/openssl
 
-# Download, build, and install OpenSSL
+# Download, build, and install OpenSSL with kTLS
 RUN wget https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz && \
     tar xzf openssl-$OPENSSL_VERSION.tar.gz && \
     cd openssl-$OPENSSL_VERSION && \
-    ./config --prefix=$OPENSSL_PREFIX --openssldir=$OPENSSL_PREFIX no-shared && \
+    ./config --prefix=$OPENSSL_PREFIX --openssldir=$OPENSSL_PREFIX no-shared enable-ktls && \
     make -j$(nproc) && make install && \
     cd .. && rm -rf openssl-$OPENSSL_VERSION*
 
